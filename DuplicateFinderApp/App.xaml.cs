@@ -1,14 +1,11 @@
-﻿using System.Configuration;
-using System.Data;
 using System.Windows;
 
 namespace DuplicateFinderApp
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// The WPF application. App.xaml opens MainWindow when the program starts.
     /// </summary>
     public partial class App : Application
     {
     }
-
 }
