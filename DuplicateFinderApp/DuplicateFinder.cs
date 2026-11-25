@@ -1,4 +1,5 @@
 using System.IO;
+using System.Security.Cryptography;
 
 namespace DuplicateFinderApp
 {
@@ -80,9 +81,30 @@ namespace DuplicateFinderApp
                     return new[] { ".jpg", ".png" };
                 case FileType.Pdf:
                     return new[] { ".pdf" };
+                case FileType.Text:
+                    return new[] { ".txt" };
                 default:
                     return new string[0];
             }
+        }
+
+        /// <summary>
+        /// Calculates a SHA-256 hash of the file's contents.
+        /// Two files with the same hash have the same contents.
+        /// </summary>
+        /// <param name="filePath">The full path of the file.</param>
+        /// <param name="token">Lets the caller cancel the work.</param>
+        /// <returns>The hash as a text of 64 hexadecimal characters.</returns>
+        public async Task<string> ComputeHashAsync(string filePath, CancellationToken token = default)
+        {
+            using SHA256 sha256 = SHA256.Create();
+
+            // useAsync: true makes the stream read the file asynchronously.
+            await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read,
+                                                    FileShare.Read, bufferSize: 4096, useAsync: true);
+
+            byte[] hash = await sha256.ComputeHashAsync(stream, token);
+            return Convert.ToHexString(hash);
         }
 
         /// <summary>
@@ -93,10 +115,14 @@ namespace DuplicateFinderApp
         /// <param name="file">The file.</param>
         /// <param name="settings">The attributes to use.</param>
         /// <param name="token">Lets the caller cancel the work.</param>
-        public Task<string> CreateKeyAsync(FileInfo file, CompareSettings settings, CancellationToken token = default)
+        public async Task<string> CreateKeyAsync(FileInfo file, CompareSettings settings, CancellationToken token = default)
         {
             var parts = new List<string>();
 
+            if (settings.Name)
+            {
+                parts.Add(file.Name.ToLowerInvariant());
+            }
             if (settings.Size)
             {
                 parts.Add(file.Length.ToString());
@@ -105,10 +131,12 @@ namespace DuplicateFinderApp
             {
                 parts.Add(file.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"));
             }
+            if (settings.Hash)
+            {
+                parts.Add(await ComputeHashAsync(file.FullName, token));
+            }
 
-            // Nothing here needs to wait yet, so we return a finished task.
-            // In a later commit the hash makes this method truly asynchronous.
-            return Task.FromResult(string.Join("|", parts));
+            return string.Join("|", parts);
         }
 
         /// <summary>

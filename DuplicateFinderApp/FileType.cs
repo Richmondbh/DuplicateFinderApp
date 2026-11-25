@@ -13,5 +13,8 @@ namespace DuplicateFinderApp
 
         /// <summary>PDF documents: .pdf files.</summary>
         Pdf,
+
+        /// <summary>Text files: .txt files.</summary>
+        Text
     }
 }

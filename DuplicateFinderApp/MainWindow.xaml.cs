@@ -106,8 +106,10 @@ namespace DuplicateFinderApp
         {
             return new CompareSettings
             {
+                Name = chkName.IsChecked == true,
                 Size = chkSize.IsChecked == true,
                 DateModified = chkDate.IsChecked == true,
+                Hash = chkHash.IsChecked == true
             };
         }
 
@@ -123,6 +125,10 @@ namespace DuplicateFinderApp
             if (rbPdf.IsChecked == true)
             {
                 return FileType.Pdf;
+            }
+            if (rbText.IsChecked == true)
+            {
+                return FileType.Text;
             }
             return FileType.AllFiles;
         }

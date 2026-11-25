@@ -63,8 +63,11 @@
 
             <GroupBox Grid.Column="0" Header="2. Compare files by">
                 <WrapPanel>
+                    <CheckBox x:Name="chkName" Content="Name" />
                     <CheckBox x:Name="chkSize" Content="Size" IsChecked="True" />
                     <CheckBox x:Name="chkDate" Content="Date modified" IsChecked="True" />
+                    <CheckBox x:Name="chkHash" Content="Content (hash)"
+                              ToolTip="Compares the actual contents of the files. Most accurate, but slower." />
                 </WrapPanel>
             </GroupBox>
 
@@ -73,6 +76,7 @@
                     <RadioButton x:Name="rbAll" Content="All files" GroupName="FileType" IsChecked="True" />
                     <RadioButton x:Name="rbPictures" Content="Pictures (.jpg, .png)" GroupName="FileType" />
                     <RadioButton x:Name="rbPdf" Content="PDF (.pdf)" GroupName="FileType" />
+                    <RadioButton x:Name="rbText" Content="Text (.txt)" GroupName="FileType" />
                 </WrapPanel>
             </GroupBox>
         </Grid>
