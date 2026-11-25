@@ -4,7 +4,7 @@
         Title="Duplicate Finder" Height="650" Width="1100"
         WindowStartupLocation="CenterScreen" Background="#F3F5F8">
 
-    
+    <!-- Styles: shared look for all controls of the same type -->
     <Window.Resources>
         <Style TargetType="GroupBox">
             <Setter Property="Margin" Value="0,0,0,10" />
@@ -22,18 +22,29 @@
             <Setter Property="FontWeight" Value="Normal" />
             <Setter Property="Padding" Value="4" />
         </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Margin" Value="0,4,20,4" />
+            <Setter Property="FontWeight" Value="Normal" />
+        </Style>
+        <Style TargetType="RadioButton">
+            <Setter Property="Margin" Value="0,4,20,4" />
+            <Setter Property="FontWeight" Value="Normal" />
+        </Style>
+        <Style TargetType="ListView">
+            <Setter Property="FontWeight" Value="Normal" />
+        </Style>
     </Window.Resources>
 
     <DockPanel Margin="14">
 
-       
+        <!-- Status bar at the bottom of the window -->
         <StatusBar DockPanel.Dock="Bottom" Background="Transparent">
             <StatusBarItem>
                 <TextBlock x:Name="txtStatus" Text="Select a folder to start." />
             </StatusBarItem>
         </StatusBar>
 
- 
+        <!-- 1. Folder selection -->
         <GroupBox Header="1. Folder to search" DockPanel.Dock="Top">
             <DockPanel>
                 <Button x:Name="btnBrowse" Content="Browse..." DockPanel.Dock="Right"
@@ -42,8 +53,79 @@
             </DockPanel>
         </GroupBox>
 
-        
-        <TextBlock Text="The search options and the results will be shown here."
-                   Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <!-- 2. Attributes and 3. file types, side by side -->
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Grid.Column="0" Header="2. Compare files by">
+                <WrapPanel>
+                    <CheckBox x:Name="chkSize" Content="Size" IsChecked="True" />
+                    <CheckBox x:Name="chkDate" Content="Date modified" IsChecked="True" />
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Grid.Column="2" Header="3. File type">
+                <WrapPanel>
+                    <RadioButton x:Name="rbAll" Content="All files" GroupName="FileType" IsChecked="True" />
+                    <RadioButton x:Name="rbPictures" Content="Pictures (.jpg, .png)" GroupName="FileType" />
+                    <RadioButton x:Name="rbPdf" Content="PDF (.pdf)" GroupName="FileType" />
+                </WrapPanel>
+            </GroupBox>
+        </Grid>
+
+        <!-- Buttons -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button x:Name="btnFind" Content="Find duplicates" Click="BtnFind_Click" />
+        </StackPanel>
+
+        <!-- Results: originals on the left, their duplicates on the right -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- List one: the first occurrence of every file that has duplicates -->
+            <GroupBox Grid.Column="0" Header="Files that have duplicates (first occurrence)">
+                <ListView x:Name="lvOriginals" SelectionMode="Single"
+                          SelectionChanged="LvOriginals_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Name" Width="170"
+                                            DisplayMemberBinding="{Binding Original.Name}" />
+                            <GridViewColumn Header="Folder" Width="170"
+                                            DisplayMemberBinding="{Binding Original.DirectoryName}" />
+                            <GridViewColumn Header="Size" Width="90"
+                                            DisplayMemberBinding="{Binding Original.Length, StringFormat='{}{0:N0} B'}" />
+                            <GridViewColumn Header="Copies" Width="55"
+                                            DisplayMemberBinding="{Binding Duplicates.Count}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </GroupBox>
+
+            <!-- List two: the duplicates of the file selected in list one -->
+            <GroupBox Grid.Column="2" Header="Duplicates of the selected file">
+                <ListView x:Name="lvDuplicates">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Name" Width="150"
+                                            DisplayMemberBinding="{Binding Name}" />
+                            <GridViewColumn Header="Folder" Width="170"
+                                            DisplayMemberBinding="{Binding DirectoryName}" />
+                            <GridViewColumn Header="Size" Width="90"
+                                            DisplayMemberBinding="{Binding Length, StringFormat='{}{0:N0} B'}" />
+                            <GridViewColumn Header="Modified" Width="115"
+                                            DisplayMemberBinding="{Binding LastWriteTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </GroupBox>
+        </Grid>
     </DockPanel>
 </Window>
