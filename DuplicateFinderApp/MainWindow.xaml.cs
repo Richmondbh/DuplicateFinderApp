@@ -16,6 +16,9 @@ namespace DuplicateFinderApp
         // The result of the latest search.
         private List<DuplicateGroup> _groups = new List<DuplicateGroup>();
 
+        // Used to cancel a search that is running. Null when no search runs.
+        private CancellationTokenSource? _cancellation;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -61,15 +64,22 @@ namespace DuplicateFinderApp
                 return;
             }
 
-            btnFind.IsEnabled = false;
-            btnBrowse.IsEnabled = false;
+            _cancellation = new CancellationTokenSource();
+            SetSearching(true);
             ClearResults();
             txtStatus.Text = "Searching for duplicates...";
 
             try
             {
-                _groups = await _finder.FindDuplicatesAsync(txtFolder.Text, settings, GetFileType());
+                _groups = await _finder.FindDuplicatesAsync(txtFolder.Text, settings, GetFileType(),
+                                                            _cancellation.Token);
                 ShowResults();
+            }
+            catch (OperationCanceledException)
+            {
+                // The user clicked Cancel.
+                ClearResults();
+                txtStatus.Text = "The search was cancelled.";
             }
             catch (Exception ex)
             {
@@ -79,8 +89,57 @@ namespace DuplicateFinderApp
             }
             finally
             {
-                btnFind.IsEnabled = true;
-                btnBrowse.IsEnabled = true;
+                SetSearching(false);
+                _cancellation.Dispose();
+                _cancellation = null;
+            }
+        }
+
+        /// <summary>
+        /// Asks the running search to stop.
+        /// </summary>
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            _cancellation?.Cancel();
+            txtStatus.Text = "Cancelling...";
+        }
+
+        /// <summary>
+        /// Deletes all duplicates after the user has confirmed.
+        /// The original (first occurrence) of every file is kept.
+        /// </summary>
+        private async void BtnDelete_Click(object sender, RoutedEventArgs e)
+        {
+            int duplicateCount = _groups.Sum(g => g.Duplicates.Count);
+            if (duplicateCount == 0)
+            {
+                return;
+            }
+
+            // Always ask first, so no files are deleted by accident.
+            MessageBoxResult answer = MessageBox.Show(
+                $"Do you want to delete {duplicateCount} duplicate file(s)?\n\n" +
+                "One copy of every file (the list on the left) is kept.\n" +
+                "Deleted files are NOT moved to the Recycle Bin.",
+                "Confirm delete", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+
+            if (answer != MessageBoxResult.Yes)
+            {
+                txtStatus.Text = "Nothing was deleted.";
+                return;
+            }
+
+            btnDelete.IsEnabled = false;
+            try
+            {
+                int deleted = await _finder.DeleteDuplicatesAsync(_groups);
+                ClearResults();
+                txtStatus.Text = $"{deleted} of {duplicateCount} duplicate file(s) deleted.";
+            }
+            catch (Exception ex)
+            {
+                txtStatus.Text = "Deleting failed.";
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -151,6 +210,8 @@ namespace DuplicateFinderApp
                                  "Select a file on the left to see its duplicates.";
                 lvOriginals.SelectedIndex = 0;
             }
+
+            btnDelete.IsEnabled = duplicateCount > 0;
         }
 
         /// <summary>
@@ -161,6 +222,18 @@ namespace DuplicateFinderApp
             _groups = new List<DuplicateGroup>();
             lvOriginals.ItemsSource = null;
             lvDuplicates.ItemsSource = null;
+            btnDelete.IsEnabled = false;
+        }
+
+        /// <summary>
+        /// Turns buttons on or off while a search is running.
+        /// </summary>
+        private void SetSearching(bool searching)
+        {
+            btnFind.IsEnabled = !searching;
+            btnBrowse.IsEnabled = !searching;
+            btnCancel.IsEnabled = searching;
+            progressBar.Visibility = searching ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

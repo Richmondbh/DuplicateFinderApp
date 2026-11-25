@@ -84,6 +84,11 @@
         <!-- Buttons -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
             <Button x:Name="btnFind" Content="Find duplicates" Click="BtnFind_Click" />
+            <Button x:Name="btnCancel" Content="Cancel" IsEnabled="False" Click="BtnCancel_Click" />
+            <Button x:Name="btnDelete" Content="Delete duplicates" IsEnabled="False"
+                    Foreground="DarkRed" Click="BtnDelete_Click" />
+            <ProgressBar x:Name="progressBar" Width="200" Height="16" Margin="8,0,0,0"
+                         IsIndeterminate="True" Visibility="Collapsed" />
         </StackPanel>
 
         <!-- Results: originals on the left, their duplicates on the right -->

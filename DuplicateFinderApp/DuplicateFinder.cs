@@ -186,5 +186,43 @@ namespace DuplicateFinderApp
             }
             return groups;
         }
+
+        /// <summary>
+        /// Deletes all duplicates and keeps the original of every group.
+        /// Files that cannot be deleted (for example because they are open
+        /// in another program) are skipped.
+        /// </summary>
+        /// <param name="groups">The groups returned by FindDuplicatesAsync.</param>
+        /// <returns>The number of files that were deleted.</returns>
+        public async Task<int> DeleteDuplicatesAsync(List<DuplicateGroup> groups)
+        {
+            return await Task.Run(() =>
+            {
+                int deleted = 0;
+                foreach (DuplicateGroup group in groups)
+                {
+                    foreach (FileInfo file in group.Duplicates)
+                    {
+                        try
+                        {
+                            if (File.Exists(file.FullName))
+                            {
+                                File.Delete(file.FullName);
+                                deleted++;
+                            }
+                        }
+                        catch (IOException)
+                        {
+                            // The file is in use. Skip it and continue with the next one.
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            // We are not allowed to delete this file. Skip it.
+                        }
+                    }
+                }
+                return deleted;
+            });
+        }
     }
 }
