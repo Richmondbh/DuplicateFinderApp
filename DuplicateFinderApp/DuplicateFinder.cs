@@ -16,7 +16,7 @@ namespace DuplicateFinderApp
         /// <param name="folderPath">The folder to search.</param>
         /// <param name="token">Lets the caller cancel the search.</param>
         /// <returns>A list with one FileInfo per file.</returns>
-        /// <exception cref="DirectoryNotFoundException">The folder does not exist.</exception>
+       
         public async Task<List<FileInfo>> GetFilesAsync(string folderPath, CancellationToken token = default)
         {
             if (!Directory.Exists(folderPath))
@@ -24,7 +24,7 @@ namespace DuplicateFinderApp
                 throw new DirectoryNotFoundException($"The folder '{folderPath}' does not exist.");
             }
 
-            // Reading the disk can take a long time, so we do it on a
+            // Reading the disk can take a long time, so i do it on a
             // background thread. The window stays responsive meanwhile.
             return await Task.Run(() =>
             {
@@ -51,7 +51,7 @@ namespace DuplicateFinderApp
         /// </summary>
         /// <param name="files">The files to filter.</param>
         /// <param name="fileType">The file type to keep.</param>
-        /// <returns>A new list with only the matching files.</returns>
+      
         public async Task<List<FileInfo>> FilterByFileTypeAsync(List<FileInfo> files, FileType fileType)
         {
             string[] extensions = GetExtensions(fileType);
@@ -92,9 +92,7 @@ namespace DuplicateFinderApp
         /// Calculates a SHA-256 hash of the file's contents.
         /// Two files with the same hash have the same contents.
         /// </summary>
-        /// <param name="filePath">The full path of the file.</param>
-        /// <param name="token">Lets the caller cancel the work.</param>
-        /// <returns>The hash as a text of 64 hexadecimal characters.</returns>
+  
         public async Task<string> ComputeHashAsync(string filePath, CancellationToken token = default)
         {
             using SHA256 sha256 = SHA256.Create();
@@ -112,9 +110,6 @@ namespace DuplicateFinderApp
         /// Files with the same key are duplicates of each other.
         /// Example with Size and Date modified: "52341|2025-01-15 10:30:00".
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="settings">The attributes to use.</param>
-        /// <param name="token">Lets the caller cancel the work.</param>
         public async Task<string> CreateKeyAsync(FileInfo file, CompareSettings settings, CancellationToken token = default)
         {
             var parts = new List<string>();
@@ -144,11 +139,6 @@ namespace DuplicateFinderApp
         /// Steps: 1) get all files, 2) keep the selected file type,
         /// 3) give every file a key, 4) files with the same key are duplicates.
         /// </summary>
-        /// <param name="folderPath">The folder to search (subfolders included).</param>
-        /// <param name="settings">The attributes to compare.</param>
-        /// <param name="fileType">The type of files to search for.</param>
-        /// <param name="token">Lets the caller cancel the search.</param>
-        /// <returns>One DuplicateGroup for every file that has duplicates.</returns>
         public async Task<List<DuplicateGroup>> FindDuplicatesAsync(string folderPath, CompareSettings settings,
                                                                     FileType fileType, CancellationToken token = default)
         {
@@ -192,8 +182,6 @@ namespace DuplicateFinderApp
         /// Files that cannot be deleted (for example because they are open
         /// in another program) are skipped.
         /// </summary>
-        /// <param name="groups">The groups returned by FindDuplicatesAsync.</param>
-        /// <returns>The number of files that were deleted.</returns>
         public async Task<int> DeleteDuplicatesAsync(List<DuplicateGroup> groups)
         {
             return await Task.Run(() =>

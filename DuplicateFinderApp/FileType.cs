@@ -5,16 +5,16 @@ namespace DuplicateFinderApp
     /// </summary>
     public enum FileType
     {
-        /// <summary>Every file, whatever the extension.</summary>
+        /// Every file, whatever the extension.
         AllFiles,
 
-        /// <summary>Pictures: .jpg and .png files.</summary>
+        /// Pictures: .jpg and .png files.
         Pictures,
 
-        /// <summary>PDF documents: .pdf files.</summary>
+        /// PDF documents: .pdf files.<
         Pdf,
 
-        /// <summary>Text files: .txt files.</summary>
+        /// Text files: .txt files.
         Text
     }
 }

@@ -7,10 +7,10 @@ namespace DuplicateFinderApp
     /// </summary>
     public class DuplicateGroup
     {
-        /// <summary>The first occurrence of the file. This is the copy we keep.</summary>
+        /// The first occurrence of the file. This is the copy we keep.
         public FileInfo Original { get; }
 
-        /// <summary>The other copies of the same file.</summary>
+        ///  The other copies of the same file.
         public List<FileInfo> Duplicates { get; }
 
         public DuplicateGroup(FileInfo original, List<FileInfo> duplicates)
